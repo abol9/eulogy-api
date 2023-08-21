@@ -1,7 +1,21 @@
 {
   "version": 2,
   "env": {
-    "MONGO_URI": "@shop_api_mongo_uri"
+    "PORT":80,
+    "API_URL":"http://localhost",
+    "ADMIN_MAIL":"admin@admin.admin",
+    "ADMIN_PASSWORD":"adminadmin",
+    "ADMIN_USERNAME":"admin",
+    "SQLITE_DB":".db/data.sqlite3",
+    "PRIVATE_KEY":"sadsir12@12",
+    "JWT_ACCESS_SECRET":"sadsir12@",
+    "JWT_REFRESH_SECRET":"sadsir1210@",
+    "FRONTEND_URL":"*",
+    "FRONTEND_DOMAIN":"localhost",
+    "SMTP_SERVICE":"gmail",
+    "SMTP_USER":"testroot@gmail.com",
+    "SMTP_PASSWORD":"rootroot",
+    "MAIL_ACCEPT": ""
   },
   "builds": [
     {
