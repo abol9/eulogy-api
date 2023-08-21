@@ -1,17 +1,11 @@
-import {
-  Column,
-  DataType,
-  ForeignKey,
-  Model,
-  Table,
-} from 'sequelize-typescript';
-import { ApiProperty } from '@nestjs/swagger';
-import { User } from '../users/users.model';
-import { Musician } from '../musicians/musicians.model';
+import {Column, DataType, ForeignKey, Model, Table} from "sequelize-typescript";
+import {ApiProperty} from "@nestjs/swagger";
+import {User} from "../users/users.model";
+import {Eulogers} from "../eulogers/eulogers.model";
 
-@Table({ tableName: 'subscriptions', updatedAt: false })
+@Table({tableName: "subscriptions", updatedAt: false})
 export class Subscriptions extends Model<Subscriptions> {
-  @ApiProperty({ example: '1', description: 'Уникальный идентификатор' })
+  @ApiProperty({example: "1", description: "آیدی"})
   @Column({
     type: DataType.INTEGER,
     unique: true,
@@ -20,13 +14,13 @@ export class Subscriptions extends Model<Subscriptions> {
   })
   id: number;
 
-  @ApiProperty({ example: '4', description: 'Идентификатор пользователя' })
+  @ApiProperty({example: "4", description: "شناسه کاربر"})
   @ForeignKey(() => User)
-  @Column({ type: DataType.INTEGER, allowNull: false })
+  @Column({type: DataType.INTEGER, allowNull: false})
   userId: number;
 
-  @ApiProperty({ example: '7', description: 'Идентификатор музыканта' })
-  @ForeignKey(() => Musician)
-  @Column({ type: DataType.INTEGER, allowNull: false })
-  musicianId: number;
+  @ApiProperty({example: "7", description: "Идентификатор музыканта"})
+  @ForeignKey(() => Eulogers)
+  @Column({type: DataType.INTEGER, allowNull: false})
+  eulogerId: number;
 }

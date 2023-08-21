@@ -3,19 +3,20 @@ import {
   HttpStatus,
   Injectable,
   UnauthorizedException,
-} from '@nestjs/common';
-import { LoginUserDto } from './dto/login-user.dto';
-import { UsersService } from '../users/users.service';
-import * as bcrypt from 'bcryptjs';
-import { CreateUserDto } from '../users/dto/create-user.dto';
-import { User } from '../users/users.model';
-import { v4 as uuidv4 } from 'uuid';
-import { MailService } from './mail.service';
-import { InjectModel } from '@nestjs/sequelize';
-import { RegisterUserResponseDto } from './dto/register-user-response.dto';
-import { Request } from 'express';
-import { TokenService } from '../tokens/tokens.service';
-import { LogoutUserResponseDto } from './dto/logout-user-response.dto';
+} from "@nestjs/common";
+import {LoginUserDto} from "./dto/login-user.dto";
+import {UsersService} from "../users/users.service";
+import * as bcrypt from "bcryptjs";
+import {CreateUserDto} from "../users/dto/create-user.dto";
+import {User} from "../users/users.model";
+import {v4 as uuidv4} from "uuid";
+import {MailService} from "./mail.service";
+import {InjectModel} from "@nestjs/sequelize";
+import {RegisterUserResponseDto} from "./dto/register-user-response.dto";
+import {Request} from "express";
+import {TokenService} from "../tokens/tokens.service";
+import {LogoutUserResponseDto} from "./dto/logout-user-response.dto";
+import {Role} from "../roles/roles.model";
 
 @Injectable()
 export class AuthService {
@@ -29,13 +30,11 @@ export class AuthService {
   async login(userDto: LoginUserDto): Promise<RegisterUserResponseDto> {
     const user = await this.validateUser(userDto);
     const tokens = await this.tokenService.generateToken(user);
-
     const tokenInfo = {
       userId: user.id,
       refreshToken: tokens.refreshToken,
     };
     await this.tokenService.saveToken(tokenInfo);
-
     const userDtoResponse = Object.assign(userDto);
     delete userDtoResponse.password;
 
@@ -49,7 +48,7 @@ export class AuthService {
     const user = await this.userService.getUserByEmail(userDto.email);
     if (!user) {
       throw new UnauthorizedException({
-        message: 'Некорректный email или пароль',
+        message: "کاربری با این ایمیل وجود ندارد.",
       });
     }
     const passwordEquals = await bcrypt.compare(
@@ -60,7 +59,7 @@ export class AuthService {
       return user;
     }
     throw new UnauthorizedException({
-      message: 'Некорректный email или пароль',
+      message: "رمزعبور اشتباه است",
     });
   }
 
@@ -68,7 +67,7 @@ export class AuthService {
     const candidate = await this.userService.getUserByEmail(userDto.email);
     if (candidate) {
       throw new HttpException(
-        'Пользователь с таким email уже существует',
+        "Пользователь с таким email уже существует",
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -106,26 +105,25 @@ export class AuthService {
     };
   }
 
-  async registrationSuperUser(): Promise<RegisterUserResponseDto> {
-    const userDto = {
-      email: process.env.ADMIN_MAIL,
-      password: process.env.ADMIN_PASSWORD,
-      username: process.env.ADMIN_USERNAME,
-    };
-    const candidate = await this.userService.getAllUsers(1);
-    if (candidate.length) {
-      throw new HttpException(
-        'Первый пользователь уже зарегистрирован',
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+  async registrationSuperUser(
+    userDto: CreateUserDto,
+  ): Promise<RegisterUserResponseDto> {
+    // const userDto = {
+    //   email: process.env.ADMIN_MAIL,
+    //   password: process.env.ADMIN_PASSWORD,
+    //   username: process.env.ADMIN_USERNAME,
+    // };
+    // const candidate = await this.userService.getAllUsers(1);
+    // if (candidate.length) {
+    //   throw new HttpException("کاربری یافت نشد", HttpStatus.BAD_REQUEST);
+    // }
     const hashPassword = await bcrypt.hash(userDto.password, 5);
     const user = await this.userService.createSuperuser({
       ...userDto,
-      activationLink: 'admin',
+      activationLink: "true",
       password: hashPassword,
     });
-
+    console.log(user);
     const tokens = await this.tokenService.generateToken(user);
 
     const tokenInfo = {
@@ -143,30 +141,36 @@ export class AuthService {
     };
   }
 
+  async tokens(): Promise<any> {
+    return await this.tokenService.getTokens();
+  }
+
   async logout(request: Request): Promise<LogoutUserResponseDto> {
-    const { refreshToken } = request.cookies;
+    const {refreshToken} = request.cookies;
     if (!refreshToken)
-      throw new HttpException('Токен не найден', HttpStatus.NOT_FOUND);
+      throw new HttpException("Токен не найден", HttpStatus.NOT_FOUND);
     const token = await this.tokenService.removeToken(refreshToken);
     return {
-      refreshToken: token || '',
+      refreshToken: token || "",
     };
   }
 
   async refresh(refreshToken: string) {
     if (!refreshToken) {
       throw new UnauthorizedException({
-        message: 'Пользователь не авторизован',
+        message: "کاربر مجاز نیست",
       });
     }
     const tokenFromDb = await this.tokenService.findToken(refreshToken);
 
     if (!tokenFromDb) {
       throw new UnauthorizedException({
-        message: 'Пользователь не авторизован',
+        message: "کاربر مجاز نیست",
       });
     }
-    const user = await this.userRepository.findByPk(tokenFromDb.dataValues.id);
+    const user = await this.userRepository.findByPk(tokenFromDb.dataValues.id, {
+      include: [Role],
+    });
 
     const tokens = await this.tokenService.generateToken(user);
 
@@ -190,7 +194,7 @@ export class AuthService {
     });
     if (!user) {
       throw new HttpException(
-        'Пользователь с такой ссылкой не существует',
+        "کاربر با این لینک وجود ندارد",
         HttpStatus.BAD_REQUEST,
       );
     }

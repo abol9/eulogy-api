@@ -6,20 +6,20 @@ import {
   HasMany,
   Model,
   Table,
-} from 'sequelize-typescript';
-import { ApiProperty } from '@nestjs/swagger';
-import { Musician } from '../musicians/musicians.model';
-import { Song } from '../songs/songs.model';
+} from "sequelize-typescript";
+import {ApiProperty} from "@nestjs/swagger";
+import {Eulogers} from "../eulogers/eulogers.model";
+import {Eulogy} from "../eulogies/eulogy.model";
 
 interface AlbumCreationAttrs {
   title: string;
-  musicianId: number;
+  eulogerId: number;
   image: string;
 }
 
-@Table({ tableName: 'albums' })
+@Table({tableName: "albums"})
 export class Album extends Model<Album, AlbumCreationAttrs> {
-  @ApiProperty({ example: '1', description: 'Уникальный идентификатор' })
+  @ApiProperty({example: "1", description: "آیدی"})
   @Column({
     type: DataType.INTEGER,
     unique: true,
@@ -28,25 +28,25 @@ export class Album extends Model<Album, AlbumCreationAttrs> {
   })
   id: number;
 
-  @ApiProperty({ example: 'Sempiternal', description: 'Название альбома' })
-  @Column({ type: DataType.STRING, allowNull: false })
+  @ApiProperty({example: "Sempiternal", description: "عنوان آلبوم"})
+  @Column({type: DataType.STRING, allowNull: false})
   title: string;
 
   @ApiProperty({
-    example: '/image/albumImage.jpg',
-    description: 'Путь к обложке альбома',
+    example: "/image/albumImage.jpg",
+    description: "آدرس عکس جلد آلبوم",
   })
-  @Column({ type: DataType.STRING })
+  @Column({type: DataType.STRING})
   image: string;
 
-  @HasMany(() => Song)
-  songs: Song[];
+  @HasMany(() => Eulogy)
+  eulogies: Eulogy[];
 
-  @ApiProperty({ example: 3, description: 'Идентификатор исполнителя' })
-  @ForeignKey(() => Musician)
-  @Column({ type: DataType.INTEGER })
-  musicianId: number;
+  @ApiProperty({example: 3, description: "آیدی مداح"})
+  @ForeignKey(() => Eulogers)
+  @Column({type: DataType.INTEGER})
+  eulogerId: number;
 
-  @BelongsTo(() => Musician)
-  author: Musician;
+  @BelongsTo(() => Eulogers)
+  author: Eulogers;
 }

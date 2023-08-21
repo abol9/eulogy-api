@@ -8,18 +8,18 @@ import {
   HasOne,
   Model,
   Table,
-} from 'sequelize-typescript';
-import { ApiProperty } from '@nestjs/swagger';
-import { User } from '../users/users.model';
+} from "sequelize-typescript";
+import {ApiProperty} from "@nestjs/swagger";
+import {User} from "../users/users.model";
 
 interface TokenCreationAttrs {
   refreshToken: string;
   userId: number;
 }
 
-@Table({ tableName: 'tokens' })
+@Table({tableName: "tokens"})
 export class Token extends Model<Token, TokenCreationAttrs> {
-  @ApiProperty({ example: '1', description: 'Уникальный идентификатор' })
+  @ApiProperty({example: "1", description: "آیدی"})
   @Column({
     type: DataType.INTEGER,
     unique: true,
@@ -29,14 +29,14 @@ export class Token extends Model<Token, TokenCreationAttrs> {
   id: number;
 
   @ApiProperty({
-    example: 'dasdasfds213.dasfsd123.das12das',
-    description: 'Refresh Token',
+    example: "dasdasfds213.dasfsd123.das12das",
+    description: "Refresh Token",
   })
-  @Column({ type: DataType.TEXT })
+  @Column({type: DataType.TEXT})
   refreshToken: string;
 
   @ForeignKey(() => User)
-  @Column({ type: DataType.INTEGER, unique: true, allowNull: false })
+  @Column({type: DataType.INTEGER, unique: true, allowNull: false})
   userId: number;
 
   @BelongsTo(() => User)

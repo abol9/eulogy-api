@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class CreatePlaylistDto {
   @ApiProperty({ example: 'Для работы', description: 'Название плейлиста' })
-  @IsString({ message: 'Должно быть строкой' })
+  @IsString({ message: 'باید یک رشته باشد' })
   readonly title: string;
 
   @ApiProperty({ example: 'photo.jpg', description: 'Файл обложки' })

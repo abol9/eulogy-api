@@ -11,7 +11,7 @@ import { Role } from './roles.model';
 
 @Table({ tableName: 'user_roles', createdAt: false, updatedAt: false })
 export class UserRoles extends Model<UserRoles> {
-  @ApiProperty({ example: '1', description: 'Уникальный идентификатор' })
+  @ApiProperty({ example: '1', description: 'آیدی' })
   @Column({
     type: DataType.INTEGER,
     unique: true,
@@ -25,7 +25,7 @@ export class UserRoles extends Model<UserRoles> {
   @Column({ type: DataType.INTEGER, allowNull: false })
   roleId: number;
 
-  @ApiProperty({ example: '4', description: 'Идентификатор пользователя' })
+  @ApiProperty({ example: '4', description: 'شناسه کاربر' })
   @ForeignKey(() => User)
   @Column({ type: DataType.INTEGER, allowNull: false })
   userId: number;

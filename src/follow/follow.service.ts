@@ -1,19 +1,19 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/sequelize';
-import { User } from '../users/users.model';
-import { Musician } from '../musicians/musicians.model';
-import { Song } from '../songs/songs.model';
-import { RolesService } from '../roles/roles.service';
-import { FollowCreateDto } from './dto/follow-create.dto';
-import { Likes } from './likes.model';
-import { Subscriptions } from './subscription.model';
+import {HttpException, HttpStatus, Injectable} from "@nestjs/common";
+import {InjectModel} from "@nestjs/sequelize";
+import {User} from "../users/users.model";
+import {Eulogers} from "../eulogers/eulogers.model";
+import {Eulogy} from "../eulogies/eulogy.model";
+import {RolesService} from "../roles/roles.service";
+import {FollowCreateDto} from "./dto/follow-create.dto";
+import {Likes} from "./likes.model";
+import {Subscriptions} from "./subscription.model";
 
 @Injectable()
 export class FollowService {
   constructor(
     @InjectModel(User) private userRepository: typeof User,
-    @InjectModel(Musician) private musicianRepository: typeof Musician,
-    @InjectModel(Song) private songRepository: typeof Song,
+    @InjectModel(Eulogers) private eulogerRepository: typeof Eulogers,
+    @InjectModel(Eulogy) private eulogyRepository: typeof Eulogy,
     @InjectModel(Likes) private likesRepository: typeof Likes,
     @InjectModel(Subscriptions) private subsRepository: typeof Subscriptions,
     private roleService: RolesService,
@@ -24,15 +24,12 @@ export class FollowService {
     userId: number,
   ): Promise<FollowCreateDto> {
     const user = await this.userRepository.findByPk(userId);
-    const musician = await this.musicianRepository.findByPk(dto.followId);
+    const musician = await this.eulogerRepository.findByPk(dto.followId);
     if (user && musician) {
-      await user.$add('musiciansSubscription', musician.id);
+      await user.$add("eulogersSubscription", musician.id);
       return dto;
     }
-    throw new HttpException(
-      'Пользователь или музыкант не найдены',
-      HttpStatus.NOT_FOUND,
-    );
+    throw new HttpException("کاربر یا نوازنده یافت نشد", HttpStatus.NOT_FOUND);
   }
 
   async createLikes(
@@ -40,13 +37,13 @@ export class FollowService {
     userId: number,
   ): Promise<FollowCreateDto> {
     const user = await this.userRepository.findByPk(userId);
-    const song = await this.songRepository.findByPk(dto.followId);
-    if (user && song) {
-      await user.$add('songsLikes', song.id);
+    const eulogy = await this.eulogyRepository.findByPk(dto.followId);
+    if (user && eulogy) {
+      await user.$add("eulogyLikes", eulogy.id);
       return dto;
     }
     throw new HttpException(
-      'Пользователь или песня не найдены',
+      "Пользователь или песня не найдены",
       HttpStatus.NOT_FOUND,
     );
   }
@@ -58,7 +55,7 @@ export class FollowService {
     await this.subsRepository.destroy({
       where: {
         userId: userId,
-        musicianId: dto.followId,
+        eulogerId: dto.followId,
       },
     });
     return;
@@ -68,7 +65,7 @@ export class FollowService {
     await this.likesRepository.destroy({
       where: {
         userId: userId,
-        songId: dto.followId,
+        eulogyId: dto.followId,
       },
     });
     return;

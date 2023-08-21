@@ -17,7 +17,7 @@ interface BanCreationAttrs {
 
 @Table({ tableName: 'bans' })
 export class Ban extends Model<Ban, BanCreationAttrs> {
-  @ApiProperty({ example: '1', description: 'Уникальный идентификатор' })
+  @ApiProperty({ example: '1', description: 'شناسه منحصر به فرد' })
   @Column({
     type: DataType.INTEGER,
     unique: true,
@@ -26,11 +26,11 @@ export class Ban extends Model<Ban, BanCreationAttrs> {
   })
   id: number;
 
-  @ApiProperty({ example: 'true', description: 'Забанен или нет' })
+  @ApiProperty({ example: 'true', description: 'ممنوع شده یا نه' })
   @Column({ type: DataType.BOOLEAN, defaultValue: false })
   banned: boolean;
 
-  @ApiProperty({ example: 'За спам', description: 'Причина блокировки' })
+  @ApiProperty({ example: 'За спам', description: 'دلیل مسدود شدن' })
   @Column({
     type: DataType.STRING,
     allowNull: true,

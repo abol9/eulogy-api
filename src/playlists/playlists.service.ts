@@ -1,20 +1,20 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/sequelize';
-import { Playlist } from './playlists.model';
-import { CreatePlaylistDto } from './dto/create-playlist.dto';
-import { FilesService, FileType } from '../files/files.service';
-import { AddSongToPlaylistDto } from './dto/add-song-to-playlist.dto';
-import { PlaylistSongs } from './playlist-songs.model';
-import { Song } from '../songs/songs.model';
-import { User } from '../users/users.model';
+import {HttpException, HttpStatus, Injectable} from "@nestjs/common";
+import {InjectModel} from "@nestjs/sequelize";
+import {Playlist} from "./playlists.model";
+import {CreatePlaylistDto} from "./dto/create-playlist.dto";
+import {FilesService, FileType} from "../files/files.service";
+import {AddEulogyToPlaylistDto} from "./dto/add-eulogy-to-playlist.dto";
+import {PlaylistEulogies} from "./playlist-eulogies.model";
+import {Eulogy} from "../eulogies/eulogy.model";
+import {User} from "../users/users.model";
 
 @Injectable()
 export class PlaylistsService {
   constructor(
     @InjectModel(Playlist) private playlistRepository: typeof Playlist,
-    @InjectModel(PlaylistSongs)
-    private playlistSongsRepository: typeof PlaylistSongs,
-    @InjectModel(Song) private songRepository: typeof Song,
+    @InjectModel(PlaylistEulogies)
+    private playlistSongsRepository: typeof PlaylistEulogies,
+    @InjectModel(Eulogy) private eulogyRepository: typeof Eulogy,
     @InjectModel(User) private userRepository: typeof User,
     private fileService: FilesService,
   ) {}
@@ -26,10 +26,10 @@ export class PlaylistsService {
   ): Promise<Playlist> {
     const user = this.userRepository.findByPk(userId);
     if (!user) {
-      throw new HttpException('Пользователь не найден', HttpStatus.NOT_FOUND);
+      throw new HttpException("کاربر پیدا نشد", HttpStatus.NOT_FOUND);
     }
 
-    let fileName = 'no photo';
+    let fileName = "no photo";
     if (image) {
       fileName = await this.fileService.createFile(
         image,
@@ -45,17 +45,57 @@ export class PlaylistsService {
     return playlist;
   }
 
-  async addSongToPlaylist(dto: AddSongToPlaylistDto): Promise<Song> {
-    const song = await this.songRepository.findByPk(dto.songId);
-    const playlist = await this.playlistRepository.findByPk(dto.playlistId);
-    if (song && playlist) {
-      await playlist.$add('song', song.id);
-      return song;
+  async addEulogyToPlaylist(dto: AddEulogyToPlaylistDto): Promise<Eulogy> {
+    const eulogy = await this.eulogyRepository.findByPk(dto.eulogyId);
+    const playlist = await this.playlistRepository.findByPk(dto.playlistId, {
+      include: [Eulogy],
+    });
+    if (eulogy && playlist) {
+      const hasEulogy = playlist.eulogies.find(
+        (item) => item.id == dto.eulogyId,
+      );
+      if (hasEulogy) {
+        throw new HttpException(
+          "مداحی در لیست وجود دارد.",
+          HttpStatus.CONFLICT,
+        );
+      }
+      await playlist.$add("eulogy", eulogy.id);
+      return eulogy;
     }
     throw new HttpException(
-      'Плейлист или песня не найдены',
+      "مداحی یا لیست پخش یافت نشد.",
       HttpStatus.NOT_FOUND,
     );
+  }
+
+  async playlists(userId: number): Promise<Playlist[]> {
+    const playlists = await this.playlistRepository.findAll({
+      where: {userId: userId},
+    });
+    return playlists;
+  }
+
+  async playlistForEulogy(
+    eulogyId: number,
+    userId: number,
+  ): Promise<Playlist[]> {
+    const playlists = await this.playlistRepository.findAll({
+      where: {userId: userId},
+    });
+    const eulogy = await this.eulogyRepository.findByPk(eulogyId, {
+      include: [Playlist],
+    });
+    if (eulogy) {
+      const allowedPlaylists = playlists.filter(
+        (playlist) =>
+          !eulogy.playlists.find(
+            (playlistEulogy) => playlistEulogy.id == playlist.id,
+          ),
+      );
+      return allowedPlaylists;
+    }
+    throw new HttpException("مداحی مورد نظر یافت نشد.", HttpStatus.BAD_REQUEST);
   }
 
   async delete(value: number, userId: number): Promise<void> {
@@ -65,7 +105,7 @@ export class PlaylistsService {
       return;
     }
     throw new HttpException(
-      'Ошибка при удалении плейлиста',
+      "لیست پخش یافت نشد یا شما اجازه دسترسی به آن را ندارید.",
       HttpStatus.BAD_REQUEST,
     );
   }

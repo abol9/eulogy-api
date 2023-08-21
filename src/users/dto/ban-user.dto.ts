@@ -4,13 +4,13 @@ import { IsNumber, IsString, Length } from 'class-validator';
 export class BanUserDto {
   @ApiProperty({
     example: 3,
-    description: 'Идентификатор пользователя для бана',
+    description: 'شناسه کاربری برای ممنوع کردن',
   })
-  @IsNumber({}, { message: 'Должно быть числом' })
+  @IsNumber({}, { message: 'باید یک عدد باشد' })
   readonly userId: number;
 
-  @ApiProperty({ example: 'Хулиганство', description: 'Причина бана' })
-  @IsString({ message: 'Должно быть строкой' })
-  @Length(3, 40, { message: 'Не меньше 3 и не больше 40' })
+  @ApiProperty({ example: 'هولیگانیسم', description: 'دلیل ممنوعیت' })
+  @IsString({ message: 'باید یک رشته باشد' })
+  @Length(3, 40, { message: 'نه کمتر از 3 و نه بیشتر از 40' })
   readonly banReason: string;
 }

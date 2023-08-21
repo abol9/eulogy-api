@@ -6,11 +6,11 @@ import {
   ForeignKey,
   Model,
   Table,
-} from 'sequelize-typescript';
-import { ApiProperty } from '@nestjs/swagger';
-import { User } from '../users/users.model';
-import { Song } from '../songs/songs.model';
-import { PlaylistSongs } from './playlist-songs.model';
+} from "sequelize-typescript";
+import {ApiProperty} from "@nestjs/swagger";
+import {User} from "../users/users.model";
+import {Eulogy} from "../eulogies/eulogy.model";
+import {PlaylistEulogies} from "./playlist-eulogies.model";
 
 interface PlaylistCreationAttrs {
   title: string;
@@ -18,9 +18,9 @@ interface PlaylistCreationAttrs {
   image: string;
 }
 
-@Table({ tableName: 'playlists' })
+@Table({tableName: "playlists", collate: "utf8mb4_general_ci"})
 export class Playlist extends Model<Playlist, PlaylistCreationAttrs> {
-  @ApiProperty({ example: '1', description: 'Уникальный идентификатор' })
+  @ApiProperty({example: "1", description: "آیدی"})
   @Column({
     type: DataType.INTEGER,
     unique: true,
@@ -29,36 +29,36 @@ export class Playlist extends Model<Playlist, PlaylistCreationAttrs> {
   })
   id: number;
 
-  @ApiProperty({ example: 'Для отдыха', description: 'Название плейлиста' })
-  @Column({ type: DataType.STRING, unique: true, allowNull: false })
+  @ApiProperty({example: "شب اول محرم", description: "عنوان لیست پخش"})
+  @Column({type: DataType.STRING, unique: true, allowNull: false})
   title: string;
 
   @ApiProperty({
-    example: 'Лучший плейлист',
-    description: 'Описание плейлиста',
+    example: "توضیحات لیست پخش",
+    description: "این لیست پخش مداحی های شور است.",
   })
   @Column({
     type: DataType.STRING,
     allowNull: false,
-    defaultValue: 'Нет описания',
+    defaultValue: "این لیست پخش است.",
   })
   description: string;
 
   @ApiProperty({
-    example: 'playlistAvatars/dsadfk.jpg',
-    description: 'Путь к файлу',
+    example: "playlistAvatars/dsadfk.jpg",
+    description: "عکس لیست پخش",
   })
-  @Column({ type: DataType.STRING })
+  @Column({type: DataType.STRING})
   image: string;
 
-  @ApiProperty({ example: 3, description: 'Идентификатор пользователя' })
+  @ApiProperty({example: 3, description: "شناسه کاربر"})
   @ForeignKey(() => User)
-  @Column({ type: DataType.INTEGER })
+  @Column({type: DataType.INTEGER})
   userId: number;
 
   @BelongsTo(() => User)
   author: User;
 
-  @BelongsToMany(() => Song, () => PlaylistSongs)
-  songs: Song[];
+  @BelongsToMany(() => Eulogy, () => PlaylistEulogies)
+  eulogies: Eulogy[];
 }

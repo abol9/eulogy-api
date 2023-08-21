@@ -2,14 +2,14 @@ import { IsNumber, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class AddRoleDto {
-  @ApiProperty({ example: 'ADMIN', description: 'Название роли' })
-  @IsString({ message: 'Должно быть строкой' })
+  @ApiProperty({ example: 'ADMIN', description: 'اسم نقش' })
+  @IsString({ message: 'باید یک رشته باشد' })
   readonly value: string;
 
   @ApiProperty({
     example: '4',
-    description: 'Идентификатор пользователя для выдачи ему роли',
+    description: 'شناسه کاربری برای صدور نقش برای او',
   })
-  @IsNumber({}, { message: 'Должно быть числом' })
+  @IsNumber({}, { message: 'باید یک عدد باشد' })
   readonly userId: number;
 }

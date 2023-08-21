@@ -1,32 +1,33 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/sequelize';
-import { User } from './users.model';
-import { CreateUserLinkDto} from './dto/create-user.dto';
-import { RolesService } from '../roles/roles.service';
-import { AddRoleDto } from './dto/add-role.dto';
-import { BanUserDto } from './dto/ban-user.dto';
-import { Ban } from './bans.model';
-import { UnbanUserDto } from './dto/unban-user.dto';
-import { Musician } from '../musicians/musicians.model';
-import { Song } from '../songs/songs.model';
-import { UpdateUserDto } from './dto/update-user.dto';
-import * as bcrypt from 'bcryptjs';
-import { PremiumDto } from './dto/premium.dto';
+import {HttpException, HttpStatus, Injectable} from "@nestjs/common";
+import {InjectModel} from "@nestjs/sequelize";
+import {User} from "./users.model";
+import {CreateUserLinkDto} from "./dto/create-user.dto";
+import {RolesService} from "../roles/roles.service";
+import {AddRoleDto} from "./dto/add-role.dto";
+import {BanUserDto} from "./dto/ban-user.dto";
+import {Ban} from "./bans.model";
+import {UnbanUserDto} from "./dto/unban-user.dto";
+import {Eulogers} from "../eulogers/eulogers.model";
+import {Eulogy} from "../eulogies/eulogy.model";
+import {UpdateUserDto} from "./dto/update-user.dto";
+import * as bcrypt from "bcryptjs";
+import {PremiumDto} from "./dto/premium.dto";
+import { Role } from "../roles/roles.model";
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectModel(User) private userRepository: typeof User,
     @InjectModel(Ban) private banRepository: typeof Ban,
-    @InjectModel(Musician) private musicianRepository: typeof Musician,
-    @InjectModel(Song) private songRepository: typeof Song,
+    @InjectModel(Eulogers) private eulogerRepository: typeof Eulogers,
+    @InjectModel(Eulogy) private eulogyRepository: typeof Eulogy,
     private roleService: RolesService,
   ) {}
 
   async createUser(dto: CreateUserLinkDto): Promise<User> {
     const user = await this.userRepository.create(dto);
-    const role = await this.roleService.getRoleByValue('USER');
-    await user.$set('roles', [role.id]);
+    const role = await this.roleService.getRoleByValue("USER");
+    await user.$set("roles", [role.id]);
     user.roles = [role];
     const banInfo = {
       userId: Number(user.dataValues.id),
@@ -38,45 +39,49 @@ export class UsersService {
 
   async createSuperuser(dto: CreateUserLinkDto): Promise<User> {
     const user = await this.userRepository.create(dto);
+    console.log(user);
 
-    const roleUser = await this.roleService.getRoleByValue('USER');
+    const roleUser = await this.roleService.getRoleByValue("USER");
     if (!roleUser) {
       await this.roleService.createRole({
-        value: 'USER',
-        description: 'Пользователь',
-      });
-    }
-    const roleAdmin = await this.roleService.getRoleByValue('ADMIN');
-    if (!roleAdmin) {
-      await this.roleService.createRole({
-        value: 'ADMIN',
-        description: 'Администратор',
-      });
-    }
-    const roleMusician = await this.roleService.getRoleByValue('MUSICIAN');
-    if (!roleMusician) {
-      await this.roleService.createRole({
-        value: 'MUSICIAN',
-        description: 'Исполнитель',
+        value: "USER",
+        description: "کاربر",
       });
     }
 
-    await this.addRole({ userId: user.id, value: 'USER' });
-    await this.addRole({ userId: user.id, value: 'ADMIN' });
-    await this.addRole({ userId: user.id, value: 'MUSICIAN' });
+    const roleAdmin = await this.roleService.getRoleByValue("ADMIN");
+    if (!roleAdmin) {
+      await this.roleService.createRole({
+        value: "ADMIN",
+        description: "مدیر",
+      });
+    }
+
+    const roleEuloger = await this.roleService.getRoleByValue("EULOGER");
+    if (!roleEuloger) {
+      await this.roleService.createRole({
+        value: "EULOGER",
+        description: "مداح",
+      });
+    }
+
+    await this.addRole({userId: user.id, value: "USER"});
+    await this.addRole({userId: user.id, value: "ADMIN"});
+    await this.addRole({userId: user.id, value: "EULOGER"});
 
     const banInfo = {
       userId: Number(user.dataValues.id),
       banned: false,
     };
     await this.banRepository.create(banInfo);
+    const newUser = this.userRepository.findByPk(user.id, {include: [Role]});
 
-    return user;
+    return newUser;
   }
 
   async getAllUsers(count = 10, offset = 0): Promise<User[]> {
     const users = await this.userRepository.findAll({
-      include: { all: true },
+      include: {all: true},
       offset,
       limit: count,
     });
@@ -85,16 +90,16 @@ export class UsersService {
 
   async getOneUserById(value: number): Promise<User> {
     const user = await this.userRepository.findOne({
-      where: { id: value },
-      include: { all: true },
+      where: {id: value},
+      include: {all: true},
     });
     return user;
   }
 
   async getUserByEmail(email: string): Promise<User> {
     const user = await this.userRepository.findOne({
-      where: { email },
-      include: { all: true },
+      where: {email},
+      include: {all: true},
     });
     return user;
   }
@@ -103,18 +108,18 @@ export class UsersService {
     const user = await this.userRepository.findByPk(dto.userId);
     const role = await this.roleService.getRoleByValue(dto.value);
     if (user && role) {
-      await user.$add('role', role.id);
+      await user.$add("role", role.id);
       return dto;
     }
     throw new HttpException(
-      'Пользователь или роль не найдены',
+      "کاربر یا نقش پیدا نشد",
       HttpStatus.NOT_FOUND,
     );
   }
 
   async ban(dto: BanUserDto): Promise<Ban> {
     const user = await this.banRepository.findOne({
-      where: { userId: dto.userId },
+      where: {userId: dto.userId},
     });
     if (user) {
       if (!user.banned) {
@@ -123,31 +128,25 @@ export class UsersService {
         await user.save();
         return user;
       }
-      throw new HttpException(
-        'Пользователь уже забанен',
-        HttpStatus.BAD_REQUEST,
-      );
+      throw new HttpException("کاربر قبلاً بن شده است", HttpStatus.BAD_REQUEST);
     }
-    throw new HttpException('Пользователь не найден', HttpStatus.BAD_REQUEST);
+    throw new HttpException("َکاربر پیدا نشد", HttpStatus.BAD_REQUEST);
   }
 
   async unban(dto: UnbanUserDto): Promise<Ban> {
     const user = await this.banRepository.findOne({
-      where: { userId: dto.userId },
+      where: {userId: dto.userId},
     });
     if (user) {
       if (user.banned) {
         user.banned = false;
-        user.banReason = 'Не забанен';
+        user.banReason = "ممنوع نیست";
         await user.save();
         return user;
       }
-      throw new HttpException(
-        'Пользователь не забанен',
-        HttpStatus.BAD_REQUEST,
-      );
+      throw new HttpException("کاربر ممنوع نیست", HttpStatus.BAD_REQUEST);
     }
-    throw new HttpException('Пользователь не найден', HttpStatus.BAD_REQUEST);
+    throw new HttpException("کاربر پیدا نشد", HttpStatus.BAD_REQUEST);
   }
 
   async editUserById(value: number, body: UpdateUserDto): Promise<User> {
@@ -165,7 +164,7 @@ export class UsersService {
       await user.save();
       return user;
     }
-    throw new HttpException('Пользователь не найден', HttpStatus.NOT_FOUND);
+    throw new HttpException("کاربر پیدا نشد", HttpStatus.NOT_FOUND);
   }
 
   async getPremium(dto: PremiumDto): Promise<PremiumDto> {
@@ -175,7 +174,7 @@ export class UsersService {
       await user.save();
       return dto;
     }
-    throw new HttpException('Пользователь не найден', HttpStatus.NOT_FOUND);
+    throw new HttpException("کاربر پیدا نشد", HttpStatus.NOT_FOUND);
   }
 
   async removePremium(dto: PremiumDto): Promise<PremiumDto> {
@@ -185,6 +184,6 @@ export class UsersService {
       await user.save();
       return dto;
     }
-    throw new HttpException('Пользователь не найден', HttpStatus.NOT_FOUND);
+    throw new HttpException("کاربر پیدا نشد", HttpStatus.NOT_FOUND);
   }
 }

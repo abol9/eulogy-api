@@ -15,11 +15,9 @@ async function start() {
 
   const config = new DocumentBuilder()
     .setTitle('Music-streaming-service')
-    .setDescription(
-      'Документация REST API для музыкального стримингового сервиса',
-    )
+    .setDescription('REST API Documentation for Music Streaming Service')
     .setVersion('1.0.0')
-    .addTag('Vyacheslav Gordeev')
+    .addTag('Abolfazl Sadeghi')
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('/api/docs', app, document);

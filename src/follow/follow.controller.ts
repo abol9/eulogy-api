@@ -6,23 +6,23 @@ import {
   Post,
   Req,
   UseGuards,
-} from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { Roles } from '../auth/roles-auth.decorator';
-import { RolesGuard } from '../auth/roles.guard';
-import { FollowService } from './follow.service';
-import { FollowCreateDto } from './dto/follow-create.dto';
+} from "@nestjs/common";
+import {ApiOperation, ApiResponse, ApiTags} from "@nestjs/swagger";
+import {Roles} from "../auth/roles-auth.decorator";
+import {RolesGuard} from "../auth/roles.guard";
+import {FollowService} from "./follow.service";
+import {FollowCreateDto} from "./dto/follow-create.dto";
 
-@ApiTags('Подписки на музыкантов, песни')
-@Controller('follow')
+@ApiTags("اشتراک مداحان، مداحی ها")
+@Controller("follow")
 export class FollowController {
   constructor(private followService: FollowService) {}
 
-  @ApiOperation({ summary: 'Оформить подписку на музыканта' })
-  @ApiResponse({ status: 200, type: FollowCreateDto })
-  @Roles('USER')
+  @ApiOperation({summary: "دنبال کردن یک مداح"})
+  @ApiResponse({status: 200, type: FollowCreateDto})
+  @Roles("USER")
   @UseGuards(RolesGuard)
-  @Post('/subscription')
+  @Post("/subscription")
   createSubscription(
     @Body() dto: FollowCreateDto,
     @Req() request,
@@ -30,11 +30,11 @@ export class FollowController {
     return this.followService.createSubscription(dto, request.user.id);
   }
 
-  @ApiOperation({ summary: 'Удалить музыканта из подписок' })
-  @ApiResponse({ status: 204 })
-  @Roles('USER')
+  @ApiOperation({summary: "آنفالو کردن یک مداح"})
+  @ApiResponse({status: 204})
+  @Roles("USER")
   @UseGuards(RolesGuard)
-  @Delete('/subscription')
+  @Delete("/subscription")
   @HttpCode(204)
   removeSubscription(
     @Body() dto: FollowCreateDto,
@@ -43,11 +43,11 @@ export class FollowController {
     return this.followService.removeSubscription(dto, request.user.id);
   }
 
-  @ApiOperation({ summary: 'Добавить песню в избранное' })
-  @ApiResponse({ status: 200, type: FollowCreateDto })
-  @Roles('USER')
+  @ApiOperation({summary: "اضافه کردن مداحی به علاقه مندی"})
+  @ApiResponse({status: 200, type: FollowCreateDto})
+  @Roles("USER")
   @UseGuards(RolesGuard)
-  @Post('/likes')
+  @Post("/likes")
   createLikes(
     @Body() dto: FollowCreateDto,
     @Req() request,
@@ -55,11 +55,11 @@ export class FollowController {
     return this.followService.createLikes(dto, request.user.id);
   }
 
-  @ApiOperation({ summary: 'Удалить песни из избранного' })
-  @ApiResponse({ status: 204 })
-  @Roles('USER')
+  @ApiOperation({summary: "حذف کردن مداحی از علاقه مندی ها"})
+  @ApiResponse({status: 204})
+  @Roles("USER")
   @UseGuards(RolesGuard)
-  @Delete('/likes')
+  @Delete("/likes")
   @HttpCode(204)
   removeLikes(@Body() dto: FollowCreateDto, @Req() request): Promise<void> {
     return this.followService.removeLikes(dto, request.user.id);
